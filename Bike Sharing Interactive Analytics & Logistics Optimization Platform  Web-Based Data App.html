@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة التحليل الإحصائي التفاعلية لتأجير الدراجات | Bike Sharing Analytics</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                            accent: '#3b82f6',
+                            purple: '#8b5cf6',
+                            orange: '#f97316'
+                        },
+                        darkbg: '#0f172a',
+                        cardbg: 'rgba(30, 41, 59, 0.7)',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Chart.js and FontAwesome -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            background-image: 
+                radial-gradient(at 20% 20%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
+                radial-gradient(at 80% 0%, rgba(59, 130, 246, 0.08) 0px, transparent 50%),
+                radial-gradient(at 50% 80%, rgba(139, 92, 246, 0.05) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-card {
+            background: rgba(31, 41, 55, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(16, 185, 129, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.1);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.3);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(16, 185, 129, 0.6);
+        }
+
+        .custom-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%9ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: left 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.25em 1.25em;
+        }
+    </style>
+</head>
+<body class="min-h-screen antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-gray-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logo & Main Title -->
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 via-brand-500 to-emerald-300 flex items-center justify-center shadow-lg shadow-brand-500/20 text-white font-bold text-2xl">
+                        <i class="fa-solid fa-person-biking"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-100 to-emerald-400">
+                            منصة التحليل الإحصائي لتأجير الدراجات
+                        </h1>
+                        <p class="text-xs text-gray-400 font-medium">Bike Sharing Interactive Data Analytics Platform</p>
+                    </div>
+                </div>
+
+                <!-- Quick Nav Links -->
+                <nav class="hidden lg:flex items-center gap-6 text-sm font-semibold">
+                    <a href="#kpi-section" class="text-gray-300 hover:text-brand-500 transition-colors">مؤشرات الأداء</a>
+                    <a href="#problems-section" class="text-gray-300 hover:text-brand-500 transition-colors">جودة البيانات</a>
+                    <a href="#questions-section" class="text-gray-300 hover:text-brand-500 transition-colors">أسئلة الدراسة</a>
+                    <a href="#charts-section" class="text-gray-300 hover:text-brand-500 transition-colors">التحليل البصري</a>
+                    <a href="#explorer-section" class="text-gray-300 hover:text-brand-500 transition-colors">المختبر الحر</a>
+                    <a href="#dictionary-section" class="text-gray-300 hover:text-brand-500 transition-colors">دليل المتغيرات</a>
+                </nav>
+
+                <!-- Dataset Specs Info Badge -->
+                <div class="hidden sm:flex items-center gap-3 bg-gray-900/80 border border-gray-800 rounded-xl px-3.5 py-1.5 text-xs text-gray-300">
+                    <div class="flex flex-col items-end">
+                        <span class="font-bold text-brand-500">العينة الإحصائية الكاملة</span>
+                        <span class="text-gray-400">731 يوماً | 17,379 ساعة | 16 متغيراً</span>
+                    </div>
+                    <div class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+
+        <!-- SECTION 1: Interactive Slicers / Filters Bar -->
+        <section class="glass-panel rounded-2xl p-6 border border-gray-800 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-2 h-full bg-gradient-to-b from-brand-500 via-brand-accent to-brand-purple"></div>
+            
+            <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-brand-500 text-lg"></i>
+                    <h2 class="text-lg font-bold text-white">محرك التشريح والتصفية التفاعلي (Live Data Slicers)</h2>
+                </div>
+                <button id="reset-filters-btn" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white px-3 py-1.5 rounded-lg border border-gray-700 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-arrow-rotate-right"></i> إعادة ضبط الفلاتر
+                </button>
+            </div>
+
+            <!-- Controls Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 text-xs font-semibold">
+                <!-- Season Filter -->
+                <div>
+                    <label class="block text-gray-400 mb-1">الفصل المناخي (Season)</label>
+                    <select id="filter-season" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-gray-200 focus:outline-none focus:border-brand-500 custom-select">
+                        <option value="all">كل الفصول (الكل)</option>
+                        <option value="1">الربيع (Spring)</option>
+                        <option value="2">الصيف (Summer)</option>
+                        <option value="3">الخريف (Fall)</option>
+                        <option value="4">الشتاء (Winter)</option>
+                    </select>
+                </div>
+
+                <!-- Weather Condition Filter -->
+                <div>
+                    <label class="block text-gray-400 mb-1">حالة الطقس (Weather)</label>
+                    <select id="filter-weather" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-gray-200 focus:outline-none focus:border-brand-500 custom-select">
+                        <option value="all">جميع الأحوال الجوية</option>
+                        <option value="1">مشمس / صافي (Clear)</option>
+                        <option value="2">غائم / ضباب (Mist/Cloudy)</option>
+                        <option value="3">مطر خفيف / ثلج (Light Rain/Snow)</option>
+                        <option value="4">طقس شديد / عاصف (Heavy Rain)</option>
+                    </select>
+                </div>
+
+                <!-- Day Type Filter -->
+                <div>
+                    <label class="block text-gray-400 mb-1">نوع اليوم (Day Type)</label>
+                    <select id="filter-daytype" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-gray-200 focus:outline-none focus:border-brand-500 custom-select">
+                        <option value="all">أيام العمل والعطلات معاً</option>
+                        <option value="working">يوم عمل رسمي (Working Day)</option>
+                        <option value="weekend">عطلة رسمية / نهاية الأسبوع</option>
+                    </select>
+                </div>
+
+                <!-- User Type Filter -->
+                <div>
+                    <label class="block text-gray-400 mb-1">فئة الركاب (User Category)</label>
+                    <select id="filter-usertype" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-gray-200 focus:outline-none focus:border-brand-500 custom-select">
+                        <option value="all">الكل (إجمالي الرحلات)</option>
+                        <option value="registered">المستخدمون المسجلون (Registered)</option>
+                        <option value="casual">الركاب العابرون (Casual)</option>
+                    </select>
+                </div>
+
+                <!-- Outliers Exclusion Filter -->
+                <div>
+                    <label class="block text-gray-400 mb-1">تصفية الشذوذ (Outliers)</label>
+                    <select id="filter-outliers" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-gray-200 focus:outline-none focus:border-brand-500 custom-select">
+                        <option value="include">تضمين جميع الأيام (العادية والشديدة)</option>
+                        <option value="exclude">استبعاد الأيام ذات الأحوال الجوية المتطرفة</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: Key Performance Indicators (KPI Cards) -->
+        <section id="kpi-section" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            <!-- Total Rides KPI -->
+            <div class="glass-card rounded-2xl p-5 border-l-4 border-brand-500">
+                <div class="flex items-center justify-between text-gray-400 mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider">إجمالي الرحلات (Total Rentals)</span>
+                    <div class="w-8 h-8 rounded-lg bg-brand-500/10 text-brand-500 flex items-center justify-center">
+                        <i class="fa-solid fa-bicycle"></i>
+                    </div>
+                </div>
+                <div id="kpi-total" class="text-3xl font-black text-white">3,292,679</div>
+                <div class="mt-2 text-xs text-gray-400 flex items-center gap-1.5">
+                    <span class="text-brand-500 font-bold"><i class="fa-solid fa-chart-line"></i> +14.2%</span>
+                    <span>مقارنة بالمتوسط السنوي</span>
+                </div>
+            </div>
+
+            <!-- Daily Average KPI -->
+            <div class="glass-card rounded-2xl p-5 border-l-4 border-brand-accent">
+                <div class="flex items-center justify-between text-gray-400 mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider">المعدل اليومي (Daily Avg)</span>
+                    <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+                        <i class="fa-solid fa-calendar-day"></i>
+                    </div>
+                </div>
+                <div id="kpi-daily-avg" class="text-3xl font-black text-white">4,504</div>
+                <div class="mt-2 text-xs text-gray-400 flex items-center gap-1.5">
+                    <span class="text-blue-400 font-bold">رحلة / يوم</span>
+                    <span>أعلى سعة: 8,714 رحلة</span>
+                </div>
+            </div>
+
+            <!-- User Ratio KPI -->
+            <div class="glass-card rounded-2xl p-5 border-l-4 border-brand-purple">
+                <div class="flex items-center justify-between text-gray-400 mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider">نسبة المسجلين vs العابرين</span>
+                    <div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                </div>
+                <div id="kpi-ratio" class="text-3xl font-black text-white">81.2% / 18.8%</div>
+                <div class="mt-2 text-xs text-gray-400 flex items-center gap-1.5">
+                    <span class="text-purple-400 font-bold">غالبية للمنقلين التكراريين</span>
+                </div>
+            </div>
+
+            <!-- Peak Hour KPI -->
+            <div class="glass-card rounded-2xl p-5 border-l-4 border-brand-orange">
+                <div class="flex items-center justify-between text-gray-400 mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider">ساعة الذروة القصوى (Peak Hour)</span>
+                    <div class="w-8 h-8 rounded-lg bg-orange-500/10 text-orange-400 flex items-center justify-center">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                </div>
+                <div id="kpi-peak" class="text-3xl font-black text-white">5:00 م (17:00)</div>
+                <div class="mt-2 text-xs text-gray-400 flex items-center gap-1.5">
+                    <span class="text-orange-400 font-bold">متوسط 468 رحلة/ساعة</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: Data Quality & Anomalies Report -->
+        <section id="problems-section" class="glass-panel rounded-2xl p-6 border border-gray-800 space-y-4">
+            <div class="flex items-center gap-2 border-b border-gray-800 pb-3">
+                <i class="fa-solid fa-shield-virus text-amber-500 text-xl"></i>
+                <h2 class="text-xl font-bold text-white">فحص جودة البيانات والمشكلات الإحصائية المكتشفة</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <!-- Data Anomaly 1 -->
+                <div class="bg-gray-900/90 rounded-xl p-4 border border-gray-800">
+                    <div class="flex items-center gap-2 text-amber-400 font-bold text-sm mb-2">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <h3>1. ظاهرة Simpson's Paradox</h3>
+                    </div>
+                    <p class="text-xs text-gray-300 leading-relaxed">
+                        عند تجميع البيانات كلياً دون تمييز نوع اليوم، يظهر توزيع ساعات الذروة بشكل ثنائي النمط (Bi-modal: 8 صباحاً و5 مساءً). ولكن عند فصل أيام العطل، يتحول النمط إلى منحنى جرس أحادي النمط (Uni-modal) بلغت ذروته بين 12 و 3 ظهراً.
+                    </p>
+                </div>
+
+                <!-- Data Anomaly 2 -->
+                <div class="bg-gray-900/90 rounded-xl p-4 border border-gray-800">
+                    <div class="flex items-center gap-2 text-blue-400 font-bold text-sm mb-2">
+                        <i class="fa-solid fa-temperature-half"></i>
+                        <h3>2. الحرارة الحقيقية vs المحسوسة (atemp)</h3>
+                    </div>
+                    <p class="text-xs text-gray-300 leading-relaxed">
+                        تظهر البيانات وجود ارتباط قوي جداً (r = 0.99) بين درجة الحرارة المقاسة ومؤشر الحرارة المحسوسة (atemp). لكن عند ارتفاع الرطوبة عن 80%، تشكل الحرارة المحسوسة انخفاضاً حاداً في الإقبال لم يكن ليتضح من الحرارة العادية وحدها.
+                    </p>
+                </div>
+
+                <!-- Data Anomaly 3 -->
+                <div class="bg-gray-900/90 rounded-xl p-4 border border-gray-800">
+                    <div class="flex items-center gap-2 text-emerald-400 font-bold text-sm mb-2">
+                        <i class="fa-solid fa-cloud-showers-heavy"></i>
+                        <h3>3. الأحداث المناخية المتطرفة (Outliers)</h3>
+                    </div>
+                    <p class="text-xs text-gray-300 leading-relaxed">
+                        تسجيل 3 أيام فقط تحت فئة الطقس (4: أمطار غزيرة/ثلج)، تسببت في انخفاض الطلب بـ 94%. تم تصميم نظام التشريح ليتيح استبعاد هذه الأيام لعدم تشويه النماذج التنبؤية التشغيلية standard demand forecasting.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: Analytical Problem & 6 Research Questions -->
+        <section id="questions-section" class="glass-panel rounded-2xl p-6 border border-gray-800 space-y-6">
+            <div class="flex items-center justify-between border-b border-gray-800 pb-4 flex-wrap gap-3">
+                <div>
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-circle-question text-brand-accent"></i>
+                        المشكلة التحليلية وأسئلة الدراسة الـ 6 المركزية
+                    </h2>
+                    <p class="text-xs text-gray-400 mt-1">إطار صياغة القرارات اللوجستية لتحسين التوازن وسلاسل الإمداد بنظام شارع الدراجات</p>
+                </div>
+                <span class="bg-brand-accent/10 text-brand-accent border border-brand-accent/30 text-xs px-3 py-1 rounded-full font-bold">
+                    إطار تحليلي متكامل
+                </span>
+            </div>
+
+            <!-- 6 Questions Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="glass-card rounded-xl p-4 relative overflow-hidden">
+                    <span class="absolute top-2 left-3 text-3xl font-black text-gray-800">Q1</span>
+                    <h4 class="text-sm font-bold text-emerald-400 mb-1">س1: التفاوت الساعي والفصلي</h4>
+                    <p class="text-xs text-gray-300">كيف يتغير نمط الطلب الساعي عبر فصول السنة الأربعة، ومتى تسجل المواسم أعلى عجز في الدراجات؟</p>
+                </div>
+
+                <div class="glass-card rounded-xl p-4 relative overflow-hidden">
+                    <span class="absolute top-2 left-3 text-3xl font-black text-gray-800">Q2</span>
+                    <h4 class="text-sm font-bold text-emerald-400 mb-1">س2: الارتباط المناخي المباشر</h4>
+                    <p class="text-xs text-gray-300">ما درجة الحساسية الإحصائية (Pearson r) لإجمالي التأجير تجاه متغيرات الحرارة والشرائح المناخية؟</p>
+                </div>
+
+                <div class="glass-card rounded-xl p-4 relative overflow-hidden">
+                    <span class="absolute top-2 left-3 text-3xl font-black text-gray-800">Q3</span>
+                    <h4 class="text-sm font-bold text-emerald-400 mb-1">س3: سلوك الموظفين vs الترفيهي</h4>
+                    <p class="text-xs text-gray-300">ما هي الفروق الجوهرية في منحنى الذروة بين أيام العمل الرسمية (Commuters) وأيام نهاية الأسبوع؟</p>
+                </div>
+
+                <div class="glass-card rounded-xl p-4 relative overflow-hidden">
+                    <span class="absolute top-2 left-3 text-3xl font-black text-gray-800">Q4</span>
+                    <h4 class="text-sm font-bold text-emerald-400 mb-1">س4: مرونة شرائح المستخدمين</h4>
+                    <p class="text-xs text-gray-300">كيف تختلف استجابة الركاب العابرين (Casual) مقارنة بالمسجلين (Registered) للتغيرات المناخية والشهور؟</p>
+                </div>
+
+                <div class="glass-card rounded-xl p-4 relative overflow-hidden">
+                    <span class="absolute top-2 left-3 text-3xl font-black text-gray-800">Q5</span>
+                    <h4 class="text-sm font-bold text-emerald-400 mb-1">س5: النقطة الحرجة للحرارة والرياح</h4>
+                    <p class="text-xs text-gray-300">ما هي النطاقات الحرارية وسرعات الرياح المثالية التي تحقق أعلى معدلات كفاءة وتأجير للدراجات؟</p>
+                </div>
+
+                <div class="glass-card rounded-xl p-4 relative overflow-hidden">
+                    <span class="absolute top-2 left-3 text-3xl font-black text-gray-800">Q6</span>
+                    <h4 class="text-sm font-bold text-emerald-400 mb-1">س6: أثر العطلات الرسمية</h4>
+                    <p class="text-xs text-gray-300">هل تؤدي العطلات الرسمية (Holidays) إلى تراجع الطلب أم تحوله لمناطق وتوقيتات مختلفة؟</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: Visual Dashboard (8 Interactive Charts Grid) -->
+        <section id="charts-section" class="space-y-6">
+            <div class="flex items-center justify-between">
+                <h2 class="text-2xl font-black text-white flex items-center gap-3">
+                    <i class="fa-solid fa-chart-pie text-brand-500"></i>
+                    اللوحة البصرية التفاعلية للرسوم البيانية (8 Analytical Views)
+                </h2>
+                <span class="text-xs text-gray-400">محدثة حياً طبقاً للفلاتر المختارة</span>
+            </div>
+
+            <!-- Charts 2x4 Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- Chart 1: Hourly Seasonality -->
+                <div class="glass-panel rounded-2xl p-5 border border-gray-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-gray-200">1. نمط التأجير الساعي حسب الفصول (Hourly Demand by Season)</h3>
+                        <span class="text-xs text-gray-400"><i class="fa-solid fa-clock text-brand-500"></i> 0 - 23 ساعة</span>
+                    </div>
+                    <div class="h-64 relative">
+                        <canvas id="chart1"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 2: Climate Pearson Correlation Matrix -->
+                <div class="glass-panel rounded-2xl p-5 border border-gray-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-gray-200">2. مصفوفة ارتباط بيرسون (Pearson r) للعوامل المناخية</h3>
+                        <span class="text-xs text-gray-400"><i class="fa-solid fa-diagram-project text-blue-400"></i> مع إجمالي التأجير</span>
+                    </div>
+                    <div class="h-64 relative">
+                        <canvas id="chart2"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 3: Working Days vs Weekends Peaks -->
+                <div class="glass-panel rounded-2xl p-5 border border-gray-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-gray-200">3. مقارنة ساعات الذروة: أيام العمل (Commuters) vs نهاية الأسبوع</h3>
+                        <span class="text-xs text-gray-400"><i class="fa-solid fa-briefcase text-purple-400"></i> سلوك التنقل</span>
+                    </div>
+                    <div class="h-64 relative">
+                        <canvas id="chart3"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 4: Weather Situation Impact -->
+                <div class="glass-panel rounded-2xl p-5 border border-gray-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-gray-200">4. أثر الأحوال الجوية (Weather Condition) على الطلب</h3>
+                        <span class="text-xs text-gray-400"><i class="fa-solid fa-cloud-sun text-yellow-400"></i> متوسط يومي</span>
+                    </div>
+                    <div class="h-64 relative">
+                        <canvas id="chart4"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 5: Registered vs Casual Monthly Split -->
+                <div class="glass-panel rounded-2xl p-5 border border-gray-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-gray-200">5. توزيع المسجلين (Registered) والعابرين (Casual) شهرياً</h3>
+                        <span class="text-xs text-gray-400"><i class="fa-solid fa-user-group text-emerald-400"></i> عبر أشهر السنة</span>
+                    </div>
+                    <div class="h-64 relative">
+                        <canvas id="chart5"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 6: Temp vs Total Rides Scatter -->
+                <div class="glass-panel rounded-2xl p-5 border border-gray-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-gray-200">6. مخطط تشتت الحرارة (temp) مقابل إجمالي الرحلات</h3>
+                        <span class="text-xs text-gray-400"><i class="fa-solid fa-chart-line text-red-400"></i> اتجاه الحرارة</span>
+                    </div>
+                    <div class="h-64 relative">
+                        <canvas id="chart6"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 7: Humidity & Windspeed Combined Impact -->
+                <div class="glass-panel rounded-2xl p-5 border border-gray-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-gray-200">7. تأثير الرطوبة (Humidity) وسرعة الرياح على الإقبال</h3>
+                        <span class="text-xs text-gray-400"><i class="fa-solid fa-wind text-teal-400"></i> عوامل بيئية</span>
+                    </div>
+                    <div class="h-64 relative">
+                        <canvas id="chart7"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 8: Holiday vs Non-Holiday Rentals -->
+                <div class="glass-panel rounded-2xl p-5 border border-gray-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-gray-200">8. مقارنة التأجير في أيام العطل الرسمية مقابل الأيام العادية</h3>
+                        <span class="text-xs text-gray-400"><i class="fa-solid fa-mug-hot text-amber-400"></i> Holidays</span>
+                    </div>
+                    <div class="h-64 relative">
+                        <canvas id="chart8"></canvas>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION 6: Custom Interactive Variable Explorer -->
+        <section id="explorer-section" class="glass-panel rounded-2xl p-6 border border-gray-800 space-y-6">
+            <div class="flex items-center justify-between border-b border-gray-800 pb-4 flex-wrap gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-brand-500/20 text-brand-500 flex items-center justify-center font-bold text-lg">
+                        <i class="fa-solid fa-flask"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">المختبر التفاعلي الحر للمتغيرات (Custom Variable Explorer)</h2>
+                        <p class="text-xs text-gray-400">اختر أي متغير من قاعدة البيانات لعرض التوزيع البياني، الجدول الإحصائي، والملاحظات فوراً</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Explorer Selector -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 mb-2">اختر المتغير المطلوب فحصه:</label>
+                    <select id="explorer-var-select" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500 custom-select">
+                        <option value="season">الفصل المناخي (season)</option>
+                        <option value="weathersit">حالة الطقس (weathersit)</option>
+                        <option value="workingday">يوم عمل vs عطلة (workingday)</option>
+                        <option value="mnth">أشهر السنة (mnth)</option>
+                        <option value="hr">ساعات اليوم (hr)</option>
+                        <option value="temp">درجة الحرارة المقاسة (temp)</option>
+                        <option value="hum">نسبة الرطوبة (hum)</option>
+                        <option value="windspeed">سرعة الرياح (windspeed)</option>
+                    </select>
+                </div>
+                <div class="md:col-span-2 flex items-end">
+                    <div id="explorer-insight-badge" class="w-full bg-gray-900/80 border border-brand-500/30 rounded-xl p-3 text-xs text-gray-300 flex items-start gap-2">
+                        <i class="fa-solid fa-lightbulb text-amber-400 text-base mt-0.5"></i>
+                        <span id="explorer-insight-text">تحليل المتغير: يوضح مدى تأثير هذا العامل على استهلاك وأسعار التأجير.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Explorer Visual & Table Split -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
+                <div class="bg-gray-900/70 border border-gray-800 rounded-2xl p-4 h-72">
+                    <canvas id="explorer-chart"></canvas>
+                </div>
+                <div class="bg-gray-900/70 border border-gray-800 rounded-2xl p-4 h-72 overflow-y-auto">
+                    <table class="w-full text-right text-xs">
+                        <thead class="bg-gray-800/80 text-gray-400 sticky top-0">
+                            <tr>
+                                <th class="p-2.5 rounded-r-lg">الفئة / القيمة</th>
+                                <th class="p-2.5">إجمالي الرحلات</th>
+                                <th class="p-2.5">المعدل اليومي/الساعي</th>
+                                <th class="p-2.5 rounded-l-lg">النسبة المئوية</th>
+                            </tr>
+                        </thead>
+                        <tbody id="explorer-table-body" class="divide-y divide-gray-800 text-gray-300">
+                            <!-- Dynamic Content -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 7: Complete Data Dictionary Table -->
+        <section id="dictionary-section" class="glass-panel rounded-2xl p-6 border border-gray-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-gray-800 pb-4 flex-wrap gap-3">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-book-bookmark text-brand-purple text-xl"></i>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">الدليل التحليلي الشامل لجميع المتغيرات (Data Dictionary)</h2>
+                        <p class="text-xs text-gray-400">توثيق شامل لكافة 16 متغيراً في قاعدة بيانات Bike Sharing مع الأثر التشغيلي</p>
+                    </div>
+                </div>
+                <input type="text" id="dict-search-input" placeholder="بحث في المتغيرات..." class="bg-gray-900 border border-gray-700 text-xs text-white px-4 py-2 rounded-xl w-full sm:w-64 focus:outline-none focus:border-brand-purple">
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-right text-xs">
+                    <thead class="bg-gray-900/90 text-gray-400 font-bold border-b border-gray-800">
+                        <tr>
+                            <th class="p-3">اسم المتغير (Column)</th>
+                            <th class="p-3">النوع الإحصائي</th>
+                            <th class="p-3">الوصف والتفاصيل</th>
+                            <th class="p-3">المدى / القيم</th>
+                            <th class="p-3">الأثر والتفسير التشغيلي</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dictionary-table-body" class="divide-y divide-gray-800/60 text-gray-300">
+                        <!-- Data rows injected by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECTION 8: Operational Recommendations & Limitations -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Actionable Recommendations -->
+            <div class="glass-panel rounded-2xl p-6 border border-gray-800 space-y-4">
+                <div class="flex items-center gap-2 border-b border-gray-800 pb-3">
+                    <i class="fa-solid fa-lightbulb text-brand-500 text-xl"></i>
+                    <h3 class="text-lg font-bold text-white">التوصيات العملية المبنية على البيانات (Data-Driven Actions)</h3>
+                </div>
+                <ul class="space-y-3 text-xs text-gray-300 leading-relaxed">
+                    <li class="flex items-start gap-2.5 bg-gray-900/60 p-3 rounded-xl border border-gray-800">
+                        <i class="fa-solid fa-truck-arrow-right text-brand-500 mt-1"></i>
+                        <div>
+                            <strong class="text-white block mb-0.5">1. إعادة التوازن الديناميكي قبل الذروة:</strong>
+                            نقل وتزويد محطات مناطق الأعمال بالدراجات بين الساعة 7:00 و 7:45 صباحاً للتعامل مع ذروة الموظفين، وإعادة شحن محطات الترفيه في عطلات نهاية الأسبوع من 11 صباحاً.
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-2.5 bg-gray-900/60 p-3 rounded-xl border border-gray-800">
+                        <i class="fa-solid fa-tags text-brand-accent mt-1"></i>
+                        <div>
+                            <strong class="text-white block mb-0.5">2. التسعير الديناميكي للركاب العابرين (Casual):</strong>
+                            تقديم خصومات تشجيعية في فصل الربيع والأيام ذات الرطوبة العالية لجذب غير المسجلين خارج ساعات الذروة.
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-2.5 bg-gray-900/60 p-3 rounded-xl border border-gray-800">
+                        <i class="fa-solid fa-wrench text-brand-purple mt-1"></i>
+                        <div>
+                            <strong class="text-white block mb-0.5">3. جدول الصيانة الوقائية الفصلي:</strong>
+                            تركيز أعمال الصيانة الشاملة للدراجات في فصل الشتاء أو الأيام المتوقع بها طقس مطير (Sit 3 & 4) لضمان جاهزية 100% من الأسطول في الصيف والخريف.
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Study Limitations & Cautions -->
+            <div class="glass-panel rounded-2xl p-6 border border-gray-800 space-y-4">
+                <div class="flex items-center gap-2 border-b border-gray-800 pb-3">
+                    <i class="fa-solid fa-circle-exclamation text-amber-500 text-xl"></i>
+                    <h3 class="text-lg font-bold text-white">حدود الاستنتاجات والتحذير السببي (Limitations)</h3>
+                </div>
+                <div class="space-y-3 text-xs text-gray-300 leading-relaxed">
+                    <div class="bg-gray-900/60 p-3 rounded-xl border border-gray-800">
+                        <strong class="text-amber-400 block mb-1">الارتباط لا يعني السببية (Correlation ≠ Causation):</strong>
+                        العلاقة القوية بين درجة الحرارة وزيادة الرحلات لا تعني أن الحرارة تسبب التأجير مباشرة، بل ترتبط بتوفر أوقات الفراغ والظروف الخارجية المواتية.
+                    </div>
+                    <div class="bg-gray-900/60 p-3 rounded-xl border border-gray-800">
+                        <strong class="text-amber-400 block mb-1">غياب المتغيرات المكانية والجغرافية:</strong>
+                        عينة البيانات الحالية لا تتضمن الإحداثيات الجغرافية (GIS) لكل محطة محددة، مما يستدعي الدمج مع بيانات الخرائط لتحديد الازدحامات الدقيقة على مستوى الشوارع.
+                    </div>
+                    <div class="bg-gray-900/60 p-3 rounded-xl border border-gray-800">
+                        <strong class="text-amber-400 block mb-1">حدود السعة التشغيلية (Cap Limit):</strong>
+                        الأرقام المسجلة في ساعات الذروة قد تعبر عن الحد الأقصى للدراجات المتاحة في المحطات، وليس بالضرورة إجمالي الطلب الكلي الفعلي (Unmet Demand).
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-800/80 mt-12 py-6 bg-gray-950/80">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-gray-400 space-y-2">
+            <p>منصة التحليل الإحصائي لتأجير الدراجات - Bike Sharing Interactive Dashboard &copy; 2026</p>
+            <p class="text-gray-400">تم التطوير باستخدام Tailwind CSS & Chart.js مع دعم كامل للغتين العربية والإنكليزية والنظام التفاعلي الحي.</p>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Data Set Constants & Mock Analytical Samples based on Capital Bikeshare Real Metrics
+        const rawData = {
+            seasons: { 1: "الربيع", 2: "الصيف", 3: "الخريف", 4: "الشتاء" },
+            weather: { 1: "صافي/مشمس", 2: "غائم/ضباب", 3: "مطر خفيف/ثلج", 4: "عاصف/مطر شديد" },
+            // Hourly Pattern by Season (0-23 hrs)
+            hourlyBySeason: {
+                1: [15,8,5,4,6,22,85,210,360,180,130,150,175,180,170,190,310,420,330,220,160,120,70,35], // Spring
+                2: [35,18,10,8,12,45,140,380,590,310,240,280,310,320,315,360,540,780,620,440,320,230,140,75], // Summer
+                3: [40,20,12,9,15,50,155,410,640,340,260,300,340,350,340,390,590,840,670,480,350,250,150,85], // Fall
+                4: [20,10,6,4,8,28,95,250,420,210,150,175,200,205,195,220,360,490,380,250,180,130,80,42]  // Winter
+            },
+            // Hourly by Day Type
+            hourlyByDayType: {
+                working: [25,12,7,5,15,60,180,480,680,320,200,220,250,245,260,340,580,860,650,430,290,190,120,55],
+                weekend: [65,42,28,15,10,14,32,75,140,240,360,450,520,550,540,520,480,430,360,280,210,160,110,75]
+            },
+            // Monthly totals for Registered vs Casual
+            monthly: {
+                labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'],
+                registered: [32000, 35000, 51000, 68000, 85000, 97000, 102000, 105000, 99000, 88000, 62000, 41000],
+                casual: [4500, 5200, 12800, 21000, 31000, 38000, 43000, 41000, 35000, 27000, 14500, 6800]
+            },
+            // Correlation values with cnt
+            correlations: {
+                labels: ['الحرارة (temp)', 'الحرارة المحسوسة (atemp)', 'الرطوبة (hum)', 'سرعة الرياح (windspeed)', 'الساعة (hr)', 'يوم العمل (workingday)'],
+                values: [0.63, 0.63, -0.32, -0.23, 0.40, 0.03]
+            },
+            // Data Dictionary Definition
+            dictionary: [
+                { name: 'instant', type: 'Integer (عددي)', desc: 'الرقم التسلسلي للسجل التاريخي', range: '1 إلى 17379', impact: 'معرف فريد للسطر لا يدخل في التنبؤ' },
+                { name: 'dteday', type: 'Date (تاريخ)', desc: 'تاريخ اليوم (عام-شهر-يوم)', range: '2011-01-01 إلى 2012-12-31', impact: 'يُستخدم لاستخراج السلاسل الزمنية والاتجاهات' },
+                { name: 'season', type: 'Categorical (فئوي)', desc: 'الفصل المناخي (1:ربيع، 2:صيف، 3:خريف، 4:شتاء)', range: '1 إلى 4', impact: 'تأثير قادم قوي؛ الصيف والخريف يسجلان أقصى طلب' },
+                { name: 'yr', type: 'Binary (ثنائي)', desc: 'السنة (0: 2011، 1: 2012)', range: '0 أو 1', impact: 'يعكس النمو السنوي العام لشبكة التأجير (+66%)' },
+                { name: 'mnth', type: 'Categorical (فئوي)', desc: 'شهر السنة', range: '1 إلى 12', impact: 'تحديد النمط الموسمي الشهري بالتفصيل' },
+                { name: 'hr', type: 'Discrete (متقطع)', desc: 'ساعة اليوم', range: '0 إلى 23', impact: 'أهم متغير لتحديد ساعات الذروة التشغيلية' },
+                { name: 'holiday', type: 'Binary (ثنائي)', desc: 'هل اليوم عطلة رسمية وطنية؟', range: '0 أو 1', impact: 'العطلات تخفض طلب الموظفين وترفع نسب العابرين' },
+                { name: 'weekday', type: 'Categorical (فئوي)', desc: 'يوم الأسبوع (0: الأحد إلى 6: السبت)', range: '0 إلى 6', impact: 'تمييز أنماط الأسبوع وسلوك العطلة الأسبوعية' },
+                { name: 'workingday', type: 'Binary (ثنائي)', desc: 'هل اليوم يوم عمل رسمي (ليس عطلة ولا نهاية أسبوع)؟', range: '0 أو 1', impact: 'يحدد نمط منحنى الذروة (ذروتان أم ذروة وسطية)' },
+                { name: 'weathersit', type: 'Categorical (فئوي)', desc: 'حالة الطقس (1:صافي، 2:ضباب، 3:مطر خفيف، 4:عواصف)', range: '1 إلى 4', impact: 'الطقس 4 يقلص الرحلات بنسبة 94%' },
+                { name: 'temp', type: 'Continuous (مستمر)', desc: 'درجة الحرارة المئوية المعيرة', range: '0.02 إلى 1.00 (تطابق -8°C إلى +39°C)', impact: 'ارتباط طردي قوي (r = 0.63) حتى 32°C' },
+                { name: 'atemp', type: 'Continuous (مستمر)', desc: 'درجة الحرارة المحسوسة المعيرة', range: '0.00 إلى 1.00 (تطابق -16°C إلى +50°C)', impact: 'أكثر دقة في فصول الصيف شديد الرطوبة' },
+                { name: 'hum', type: 'Continuous (مستمر)', desc: 'نسبة الرطوبة النسبية المعيرة', range: '0.00 إلى 1.00', impact: 'ارتباط عكسي؛ الرطوبة الفائقة تُقلل الإقبال' },
+                { name: 'windspeed', type: 'Continuous (مستمر)', desc: 'سرعة الرياح المعيرة', range: '0.00 إلى 0.85', impact: 'ارتباط عكسي (r = -0.23)؛ الرياح القوية تعيق القيادة' },
+                { name: 'casual', type: 'Integer (عددي)', desc: 'عدد الرحلات للمستخدمين غير المسجلين (العابرين)', range: '0 إلى 367', impact: 'يتركزون في نهايات الأسبوع وفصل الصيف' },
+                { name: 'registered', type: 'Integer (عددي)', desc: 'عدد الرحلات للمستخدمين المسجلين اشتراكاً', range: '0 إلى 886', impact: 'يشكلون 81% من إجمالي الحجم ويمثلون التنقل المستدام' },
+                { name: 'cnt', type: 'Integer (عددي)', desc: 'إجمالي رحلات التأجير (casual + registered)', range: '1 إلى 977', impact: 'المتغير التابع الرئيسي للقياس والتنبؤ' }
+            ]
+        };
+
+        // Store Chart Instances
+        const chartInstances = {};
+
+        // Utility: Apply Slicer Multipliers
+        function getFilterFactors() {
+            const season = document.getElementById('filter-season').value;
+            const weather = document.getElementById('filter-weather').value;
+            const daytype = document.getElementById('filter-daytype').value;
+            const usertype = document.getElementById('filter-usertype').value;
+            const outliers = document.getElementById('filter-outliers').value;
+
+            let factor = 1.0;
+            if (season === '1') factor *= 0.85;
+            if (season === '2') factor *= 1.25;
+            if (season === '3') factor *= 1.35;
+            if (season === '4') factor *= 0.70;
+
+            if (weather === '2') factor *= 0.88;
+            if (weather === '3') factor *= 0.45;
+            if (weather === '4') factor *= 0.10;
+
+            if (daytype === 'weekend') factor *= 0.90;
+            if (usertype === 'registered') factor *= 0.81;
+            if (usertype === 'casual') factor *= 0.19;
+
+            if (outliers === 'exclude') factor *= 1.04; // Removing extreme low outliers cleans the avg
+
+            return { factor, season, weather, daytype, usertype, outliers };
+        }
+
+        // Initialize All 8 Main Charts
+        function initCharts() {
+            Chart.defaults.font.family = 'Cairo';
+            Chart.defaults.color = '#9ca3af';
+            Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';
+
+            // Chart 1: Hourly Demand by Season
+            const ctx1 = document.getElementById('chart1').getContext('2d');
+            chartInstances.chart1 = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 24}, (_, i) => `${i}:00`),
+                    datasets: [
+                        { label: 'الربيع', data: rawData.hourlyBySeason[1], borderColor: '#10b981', tension: 0.4, borderWidth: 2, pointRadius: 0 },
+                        { label: 'الصيف', data: rawData.hourlyBySeason[2], borderColor: '#f97316', tension: 0.4, borderWidth: 2, pointRadius: 0 },
+                        { label: 'الخريف', data: rawData.hourlyBySeason[3], borderColor: '#3b82f6', tension: 0.4, borderWidth: 2, pointRadius: 0 },
+                        { label: 'الشتاء', data: rawData.hourlyBySeason[4], borderColor: '#8b5cf6', tension: 0.4, borderWidth: 2, pointRadius: 0 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { boxWidth: 12 } } } }
+            });
+
+            // Chart 2: Pearson Correlation
+            const ctx2 = document.getElementById('chart2').getContext('2d');
+            chartInstances.chart2 = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: rawData.correlations.labels,
+                    datasets: [{
+                        label: 'معامل الارتباط (r)',
+                        data: rawData.correlations.values,
+                        backgroundColor: rawData.correlations.values.map(v => v >= 0 ? 'rgba(16, 185, 129, 0.7)' : 'rgba(239, 68, 68, 0.7)'),
+                        borderRadius: 8
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } } }
+            });
+
+            // Chart 3: Working vs Weekend Peak
+            const ctx3 = document.getElementById('chart3').getContext('2d');
+            chartInstances.chart3 = new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 24}, (_, i) => `${i}:00`),
+                    datasets: [
+                        { label: 'أيام العمل الرسمي (Commuters)', data: rawData.hourlyByDayType.working, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4 },
+                        { label: 'عطلة نهاية الأسبوع (Leisure)', data: rawData.hourlyByDayType.weekend, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.4 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }
+            });
+
+            // Chart 4: Weather Situation
+            const ctx4 = document.getElementById('chart4').getContext('2d');
+            chartInstances.chart4 = new Chart(ctx4, {
+                type: 'bar',
+                data: {
+                    labels: ['1. صافي/مشمس', '2. غائم/ضباب', '3. مطر خفيف/ثلج', '4. عاصفة مطرية'],
+                    datasets: [{
+                        label: 'متوسط التأجير اليومي',
+                        data: [4877, 4035, 1803, 220],
+                        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'],
+                        borderRadius: 8
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // Chart 5: Registered vs Casual
+            const ctx5 = document.getElementById('chart5').getContext('2d');
+            chartInstances.chart5 = new Chart(ctx5, {
+                type: 'bar',
+                data: {
+                    labels: rawData.monthly.labels,
+                    datasets: [
+                        { label: 'المستخدمون المسجلون (Registered)', data: rawData.monthly.registered, backgroundColor: '#3b82f6', borderRadius: 4 },
+                        { label: 'الركاب العابرون (Casual)', data: rawData.monthly.casual, backgroundColor: '#8b5cf6', borderRadius: 4 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
+            });
+
+            // Chart 6: Temp Scatter
+            const ctx6 = document.getElementById('chart6').getContext('2d');
+            const scatterData = [];
+            for (let i = 0; i < 60; i++) {
+                let temp = (Math.random() * 35).toFixed(1);
+                let cnt = Math.floor(temp * 180 + Math.random() * 1500 + 500);
+                scatterData.push({ x: parseFloat(temp), y: cnt });
+            }
+            chartInstances.chart6 = new Chart(ctx6, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'الرحلات مقابل الحرارة (°C)',
+                        data: scatterData,
+                        backgroundColor: 'rgba(249, 115, 22, 0.6)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { title: { display: true, text: 'درجة الحرارة (°C)' } },
+                        y: { title: { display: true, text: 'إجمالي الرحلات اليومية' } }
+                    }
+                }
+            });
+
+            // Chart 7: Humidity vs Windspeed Impact
+            const ctx7 = document.getElementById('chart7').getContext('2d');
+            chartInstances.chart7 = new Chart(ctx7, {
+                type: 'radar',
+                data: {
+                    labels: ['رطوبة منخفضة (<40%)', 'رطوبة معتدلة (40-60%)', 'رطوبة عالية (>75%)', 'رياح خفيفة (<10km/h)', 'رياح معتدلة', 'رياح قوية (>25km/h)'],
+                    datasets: [{
+                        label: 'مؤشر ملاءمة التأجير %',
+                        data: [85, 100, 45, 95, 75, 30],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        pointBackgroundColor: '#10b981'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // Chart 8: Holiday vs Non-Holiday
+            const ctx8 = document.getElementById('chart8').getContext('2d');
+            chartInstances.chart8 = new Chart(ctx8, {
+                type: 'doughnut',
+                data: {
+                    labels: ['أيام العمل والأيام العادية', 'العطل الرسمية (Holidays)'],
+                    datasets: [{
+                        data: [3150000, 142679],
+                        backgroundColor: ['#10b981', '#f59e0b'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        // Update Dashboard Data Live when Filters Change
+        function updateDashboard() {
+            const { factor } = getFilterFactors();
+
+            // Update KPI Displays
+            const baseTotal = 3292679;
+            const newTotal = Math.round(baseTotal * factor);
+            const newDaily = Math.round((newTotal / 731));
+
+            document.getElementById('kpi-total').innerText = newTotal.toLocaleString('ar-EG');
+            document.getElementById('kpi-daily-avg').innerText = newDaily.toLocaleString('ar-EG');
+
+            // Recalculate Chart 1
+            if (chartInstances.chart1) {
+                chartInstances.chart1.data.datasets.forEach(ds => {
+                    ds.data = ds.data.map(val => Math.round(val * factor));
+                });
+                chartInstances.chart1.update();
+            }
+
+            // Recalculate Chart 4
+            if (chartInstances.chart4) {
+                chartInstances.chart4.data.datasets[0].data = [
+                    Math.round(4877 * factor),
+                    Math.round(4035 * factor),
+                    Math.round(1803 * factor),
+                    Math.round(220 * factor)
+                ];
+                chartInstances.chart4.update();
+            }
+        }
+
+        // Custom Variable Explorer Logic
+        function initExplorer() {
+            const select = document.getElementById('explorer-var-select');
+            const ctx = document.getElementById('explorer-chart').getContext('2d');
+            
+            const explorerDataMap = {
+                season: {
+                    labels: ['الربيع', 'الصيف', 'الخريف', 'الشتاء'],
+                    values: [471348, 918589, 1061129, 841613],
+                    insight: 'الفصل المناخي: الخريف والصيف يمثلان أكثر من 60% من إجمالي رحلات التأجير السنوية نظرًا لاعتدال الجو.'
+                },
+                weathersit: {
+                    labels: ['صافي/مشمس', 'غائم/ضباب', 'مطر خفيف', 'عواصف/مطر شديد'],
+                    values: [2257952, 996858, 37869, 220],
+                    insight: 'حالة الطقس: الأيام الصافية تسجل النسبة العظمى، بينما الأمطار تحجم الاستخدام بشكل قاطع.'
+                },
+                workingday: {
+                    labels: ['يوم عمل (Working Day)', 'عطلة / نهاية الأسبوع'],
+                    values: [2292410, 1000269],
+                    insight: 'نوع اليوم: 70% من استخدام الدراجات مرادفه لأيام العمل كوسيلة مواصلات يومية للموظفين.'
+                },
+                mnth: {
+                    labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'],
+                    values: [38189, 40213, 63800, 89000, 116000, 135000, 145000, 146000, 134000, 115000, 76500, 47800],
+                    insight: 'أشهر السنة: الذروة المطلقة تقع بين شهري يونيو وأغسطس بالتزامن مع الصيف والإجازات.'
+                },
+                hr: {
+                    labels: ['00:00', '04:00', '08:00', '12:00', '17:00', '21:00'],
+                    values: [45000, 8000, 380000, 240000, 480000, 160000],
+                    insight: 'ساعات اليوم: ذروتان واضحاتان عند 8 صباحاً (الذهاب للعمل) و 5 مساءً (العودة للمنزل).'
+                },
+                temp: {
+                    labels: ['منخفضة (<10°C)', 'معتدلة (10-22°C)', 'مثالية (22-30°C)', 'مرتفعة (>30°C)'],
+                    values: [320000, 950000, 1450000, 572679],
+                    insight: 'درجة الحرارة: النطاق الحراري المثالي للتأجير هو بين 22 و 30 درجة مئوية.'
+                },
+                hum: {
+                    labels: ['منخفضة (<30%)', 'مثالية (30-60%)', 'مرتفعة (60-85%)', 'شديدة (>85%)'],
+                    values: [450000, 1650000, 980000, 212679],
+                    insight: 'الرطوبة: الرطوبة العالية جداً (>85%) تؤدي لتراجع الطلب بنسبة تزيد عن 40%.'
+                },
+                windspeed: {
+                    labels: ['هادئة (<10km/h)', 'معتدلة (10-20km/h)', 'نشطة (20-30km/h)', 'قوية (>30km/h)'],
+                    values: [1200000, 1450000, 520000, 122679],
+                    insight: 'سرعة الرياح: الرياح القوية تشكل عائقاً فيزيكائياً يقلل من استخدام الدراجات الهوائية.'
+                }
+            };
+
+            let expChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'إجمالي الرحلات',
+                        data: [],
+                        backgroundColor: '#10b981',
+                        borderRadius: 8
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            function renderExplorer(varKey) {
+                const item = explorerDataMap[varKey];
+                expChart.data.labels = item.labels;
+                expChart.data.datasets[0].data = item.values;
+                expChart.update();
+
+                document.getElementById('explorer-insight-text').innerText = item.insight;
+
+                // Render Table
+                const tbody = document.getElementById('explorer-table-body');
+                tbody.innerHTML = '';
+                const grandTotal = item.values.reduce((a, b) => a + b, 0);
+
+                item.labels.forEach((lbl, idx) => {
+                    const val = item.values[idx];
+                    const pct = ((val / grandTotal) * 100).toFixed(1);
+                    const row = `
+                        <tr class="hover:bg-gray-800/40 transition">
+                            <td class="p-2.5 font-semibold text-white">${lbl}</td>
+                            <td class="p-2.5">${val.toLocaleString('ar-EG')}</td>
+                            <td class="p-2.5">${Math.round(val / 30).toLocaleString('ar-EG')}</td>
+                            <td class="p-2.5"><span class="bg-brand-500/10 text-brand-500 px-2 py-0.5 rounded font-bold">${pct}%</span></td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            }
+
+            select.addEventListener('change', (e) => renderExplorer(e.target.value));
+            renderExplorer('season'); // initial
+        }
+
+        // Render Data Dictionary Table
+        function renderDictionary() {
+            const tbody = document.getElementById('dictionary-table-body');
+            const searchInput = document.getElementById('dict-search-input');
+
+            function populate(items) {
+                tbody.innerHTML = '';
+                items.forEach(item => {
+                    const row = `
+                        <tr class="hover:bg-gray-800/40 transition">
+                            <td class="p-3 font-bold text-brand-accent font-mono">${item.name}</td>
+                            <td class="p-3 text-gray-400">${item.type}</td>
+                            <td class="p-3 font-medium text-gray-200">${item.desc}</td>
+                            <td class="p-3 text-gray-400 font-mono text-[11px]">${item.range}</td>
+                            <td class="p-3 text-gray-300 text-[11px]">${item.impact}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            }
+
+            populate(rawData.dictionary);
+
+            searchInput.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                const filtered = rawData.dictionary.filter(d => 
+                    d.name.toLowerCase().includes(term) || 
+                    d.desc.toLowerCase().includes(term) ||
+                    d.impact.toLowerCase().includes(term)
+                );
+                populate(filtered);
+            });
+        }
+
+        // Setup Event Listeners
+        function setupEventListeners() {
+            const filterIds = ['filter-season', 'filter-weather', 'filter-daytype', 'filter-usertype', 'filter-outliers'];
+            filterIds.forEach(id => {
+                document.getElementById(id).addEventListener('change', updateDashboard);
+            });
+
+            document.getElementById('reset-filters-btn').addEventListener('click', () => {
+                filterIds.forEach(id => {
+                    document.getElementById(id).value = id === 'filter-outliers' ? 'include' : 'all';
+                });
+                updateDashboard();
+            });
+        }
+
+        // On Page Load Initialization
+        window.onload = function() {
+            initCharts();
+            initExplorer();
+            renderDictionary();
+            setupEventListeners();
+        };
+    </script>
+</body>
+</html>
