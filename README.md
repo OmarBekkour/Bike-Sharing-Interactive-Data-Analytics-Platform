@@ -8,9 +8,9 @@ I designed and developed this end-to-end interactive data analytics platform (an
 
 The platform's primary view consolidates top-level operational metrics to provide an immediate health check of total rental volume, daily averages, peak commuting hours, and user split ratios.
 
-* **Macro Operational KPIs:** Tracks Total Rentals (3.29M), Daily Average (4,504 rentals/day), Peak Hour (5:00 PM / 17:00 at 468 rentals/hr), and a +14.2% annual growth benchmark[cite: 7].
-* **Live Data Slicers:** Empowers dynamic filtering across 5 multi-variable dimensions (Seasons, Weather Conditions, Day Types, User Categories, and Outliers Exclusion)[cite: 7].
-* **User Segmentation Split:** Highlights that registered commuters account for 81.2% of total volume, while casual riders make up 18.8%[cite: 7].
+* **Macro Operational KPIs:** Tracks Total Rentals (3.29M), Daily Average (4,504 rentals/day), Peak Hour (5:00 PM / 17:00 at 468 rentals/hr), and a +14.2% annual growth benchmark.
+* **Live Data Slicers:** Empowers dynamic filtering across 5 multi-variable dimensions (Seasons, Weather Conditions, Day Types, User Categories, and Outliers Exclusion).
+* **User Segmentation Split:** Highlights that registered commuters account for 81.2% of total volume, while casual riders make up 18.8%.
 
 ## Key Dashboards Included
 
@@ -31,11 +31,13 @@ Documents all 16 operational variables within the Bike Sharing dataset, detailin
 
 ## Strategic Business & Operational Insights
 
-* **Dynamic Fleet Rebalancing:** Recommends redistributing bikes to business district stations between 7:00 AM and 7:45 AM to handle commuter peaks, and restocking leisure stations on weekend mornings[cite: 7].
-* **Dynamic Pricing for Casual Riders:** Proposes targeted promotional discounts during spring and high-humidity days to boost non-registered engagement outside peak hours[cite: 7].
-* **Seasonal Maintenance Scheduling:** Focuses comprehensive fleet maintenance during winter or rainy weather days (Sit 3 & 4) to ensure 100% fleet readiness during peak summer and fall[cite: 7].
+* **Dynamic Fleet Rebalancing:** Recommends redistributing bikes to business district stations between 7:00 AM and 7:45 AM to handle commuter peaks, and restocking leisure stations on weekend mornings.
+* **Dynamic Pricing for Casual Riders:** Proposes targeted promotional discounts during spring and high-humidity days to boost non-registered engagement outside peak hours.
+* **Seasonal Maintenance Scheduling:** Focuses comprehensive fleet maintenance during winter or rainy weather days (Sit 3 & 4) to ensure 100% fleet readiness during peak summer and fall.
 
 ## Data Architecture & Statistical Notes
 
 To maintain strict data integrity while ensuring enterprise scalability, the underlying analytical model incorporates rigorous practices:
-* **Statistical Handling
+* **Statistical Handling (Simpson's Paradox):** Accounts for multi-modal vs. uni-modal shifts when disaggregating working days from holidays.
+* **Environmental Normalization:** Standardizes continuous variables (temperature, apparent temperature, humidity, and windspeed) to capture non-linear behavioral drop-offs.
+* **Outlier Management:** Isolates extreme weather events (heavy rain/snow) to prevent distortion of standard operational forecasting models.
