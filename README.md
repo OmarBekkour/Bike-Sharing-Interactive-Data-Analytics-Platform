@@ -41,3 +41,4 @@ To maintain strict data integrity while ensuring enterprise scalability, the und
 * **Statistical Handling (Simpson's Paradox):** Accounts for multi-modal vs. uni-modal shifts when disaggregating working days from holidays.
 * **Environmental Normalization:** Standardizes continuous variables (temperature, apparent temperature, humidity, and windspeed) to capture non-linear behavioral drop-offs.
 * **Outlier Management:** Isolates extreme weather events (heavy rain/snow) to prevent distortion of standard operational forecasting models.
+* **Data Anonymization & Privacy:** Raw transactional identifiers and sensitivity-prone metrics are anonymized and structured to comply with enterprise data governance standards while preserving full analytical accuracy.
